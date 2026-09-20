@@ -1,0 +1,8 @@
+# Optional dependencies for inspecting/running selected legacy research modules.
+# The private panda_data runtime and authorized MongoDB inputs are still required.
+-r requirements.txt
+scipy==1.15.2
+statsmodels==0.14.4
+ipython==9.0.2
+pymongo==4.11.3
+loguru==0.7.3

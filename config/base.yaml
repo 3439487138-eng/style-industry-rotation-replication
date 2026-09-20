@@ -1,0 +1,25 @@
+project_name: "贝塔配置：风格行业轮动体系化方案"
+replication_mode: "practical adaptation"
+paper_source: "贝塔配置：风格行业轮动体系化方案.pdf"
+sample_start: "2018-01-01"
+sample_end: "2026-07-31"
+benchmark: "000300.SH"
+cost_bps_per_unit_turnover: 10.0
+
+# The audited source tree does not contain a complete production strategy.
+# Replace this only with a thin adapter to the authorized original engine.
+strategy:
+  adapter: "unavailable"
+
+# A production run must point at a real, authorized input source.
+# No synthetic, demo, random, or fallback provider is allowed.
+data:
+  provider: "unavailable"
+  path: "data/input"
+  allow_network: false
+  required_env: []
+
+outputs:
+  directory: "outputs"
+  payload: "outputs/report.json"
+  report: "outputs/report.html"

@@ -1,0 +1,98 @@
+# Local credentials and environments
+.env
+.venv/
+venv/
+env/
+
+# Python and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local databases, caches, logs, and build outputs
+data/db/
+**/data/db/
+data/cache/
+**/data/cache/
+logs/
+**/logs/
+build/
+dist/
+*.egg-info/
+**/build/
+**/dist/
+**/*.egg-info/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.pid
+*.tmp
+WiredTiger*
+.Temp/
+.WeDrive
+
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Generated reports and temporary outputs
+outputs/*.tmp
+outputs/.cache/
+
+# Authorized inputs stay local; only the data contract is versioned.
+data/input/
+
+# Audited local research materials retained on disk but excluded from GitHub.
+# Keep only the explicitly re-included public research source below. The rest of
+# the legacy monorepo (services, private-provider glue and generated material)
+# remains local.
+panda_factor/**
+!panda_factor/LICENSE
+!panda_factor/scripts/
+panda_factor/scripts/**
+!panda_factor/scripts/style_industry_neutralize_demo.py
+!panda_factor/panda_factor/
+panda_factor/panda_factor/**
+!panda_factor/panda_factor/panda_factor/
+panda_factor/panda_factor/panda_factor/**
+!panda_factor/panda_factor/panda_factor/__init__.py
+!panda_factor/panda_factor/panda_factor/analysis/
+!panda_factor/panda_factor/panda_factor/analysis/*.py
+!panda_factor/panda_factor/panda_factor/generate/
+!panda_factor/panda_factor/panda_factor/generate/*.py
+!panda_factor/panda_factor/panda_factor/data/
+!panda_factor/panda_factor/panda_factor/data/*.py
+!panda_factor/panda_common/
+panda_factor/panda_common/**
+!panda_factor/panda_common/panda_common/
+panda_factor/panda_common/panda_common/**
+!panda_factor/panda_common/panda_common/__init__.py
+!panda_factor/panda_common/panda_common/config.py
+!panda_factor/panda_common/panda_common/logger_config.py
+!panda_factor/panda_common/panda_common/handlers/
+!panda_factor/panda_common/panda_common/handlers/__init__.py
+!panda_factor/panda_common/panda_common/handlers/database_handler.py
+!panda_factor/panda_common/panda_common/handlers/log_handler.py
+!panda_factor/panda_common/panda_common/models/
+!panda_factor/panda_common/panda_common/models/__init__.py
+!panda_factor/panda_common/panda_common/models/chart_data.py
+!panda_factor/panda_common/panda_common/models/factor_analysis_params.py
+!panda_factor/panda_common/panda_common/utils/
+!panda_factor/panda_common/panda_common/utils/__init__.py
+!panda_factor/panda_common/panda_common/utils/stock_utils.py
+Figure2.png
+计算机.xlsx
+贝塔配置：风格行业轮动体系化方案.pdf
+权益指数配置方案风险控制视角.pdf
+量化轮动锁定高胜率交易池.pdf
+
+# Nested source-control metadata must not become part of the target repository
+**/.git/
