@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 
 from replication.config import ProjectConfig
-from replication.errors import ConfigurationError, ReplicationUnavailable
+from replication.errors import ReplicationUnavailable
 
 
-PRICE_COLUMNS = {
+STOCK_PANEL_COLUMNS = {
     "date",
     "asset",
     "close",
@@ -21,6 +21,7 @@ PRICE_COLUMNS = {
     "industry",
     "asset_type",
 }
+INDEX_PROXY_COLUMNS = {"date", "asset", "close", "volume", "asset_type", "source"}
 BENCHMARK_COLUMNS = {"date", "close"}
 
 
@@ -30,6 +31,7 @@ class MarketData:
     benchmark: pd.DataFrame
     prices_path: Path
     benchmark_path: Path
+    profile: str = "stock_panel"
 
 
 def normalize_asset_code(value: object) -> str:
@@ -69,32 +71,54 @@ def _parse_dates(frame: pd.DataFrame, label: str) -> pd.DataFrame:
 
 def load_market_data(config: ProjectConfig) -> MarketData:
     data_config = config.raw.get("data", {})
+    profile = str(data_config.get("profile", "stock_panel")).lower()
+    if profile not in {"stock_panel", "public_index_proxy"}:
+        raise ReplicationUnavailable(
+            "data.profile must be 'stock_panel' or 'public_index_proxy'"
+        )
+    price_columns = (
+        INDEX_PROXY_COLUMNS if profile == "public_index_proxy" else STOCK_PANEL_COLUMNS
+    )
     prices_path = config.data_path / str(data_config.get("prices_file", "prices.csv"))
     benchmark_path = config.data_path / str(
         data_config.get("benchmark_file", "benchmark.csv")
     )
-    prices = _parse_dates(_read_csv(prices_path, PRICE_COLUMNS, "prices"), "prices")
+    prices = _parse_dates(_read_csv(prices_path, price_columns, "prices"), "prices")
     benchmark = _parse_dates(
         _read_csv(benchmark_path, BENCHMARK_COLUMNS, "benchmark"), "benchmark"
     )
 
     prices["asset"] = prices["asset"].map(normalize_asset_code)
-    for column in ("close", "turnover", "market_cap"):
+    numeric_columns = ["close"]
+    numeric_columns.extend(
+        ["volume"] if profile == "public_index_proxy" else ["turnover", "market_cap"]
+    )
+    for column in numeric_columns:
         prices[column] = pd.to_numeric(prices[column], errors="coerce")
     benchmark["close"] = pd.to_numeric(benchmark["close"], errors="coerce")
 
-    if prices[["close", "turnover", "market_cap"]].isna().any().any():
+    if prices[numeric_columns].isna().any().any():
         raise ReplicationUnavailable("prices contains non-numeric or missing required values")
     if benchmark["close"].isna().any():
         raise ReplicationUnavailable("benchmark contains non-numeric or missing close values")
     if (prices["close"] <= 0).any() or (benchmark["close"] <= 0).any():
         raise ReplicationUnavailable("close values must be strictly positive")
-    if (prices["market_cap"] <= 0).any() or (prices["turnover"] < 0).any():
-        raise ReplicationUnavailable("market_cap must be positive and turnover non-negative")
+    if profile == "stock_panel":
+        if (prices["market_cap"] <= 0).any() or (prices["turnover"] < 0).any():
+            raise ReplicationUnavailable("market_cap must be positive and turnover non-negative")
+    elif (prices["volume"] < 0).any():
+        raise ReplicationUnavailable("volume must be non-negative")
     if prices["asset"].eq("").any():
         raise ReplicationUnavailable("prices contains an empty asset code")
-    if prices[["industry", "asset_type"]].isna().any().any():
-        raise ReplicationUnavailable("industry and asset_type must be present for every row")
+    categorical_columns = (
+        ["asset_type", "source"]
+        if profile == "public_index_proxy"
+        else ["industry", "asset_type"]
+    )
+    if prices[categorical_columns].isna().any().any():
+        raise ReplicationUnavailable(
+            f"{', '.join(categorical_columns)} must be present for every row"
+        )
     if prices.duplicated(["date", "asset"]).any():
         raise ReplicationUnavailable("prices contains duplicate date/asset observations")
     if benchmark.duplicated(["date"]).any():
@@ -109,11 +133,11 @@ def load_market_data(config: ProjectConfig) -> MarketData:
 
     prices = prices.sort_values(["asset", "date"]).reset_index(drop=True)
     benchmark = benchmark.sort_values("date").reset_index(drop=True)
-    if not np.isfinite(prices[["close", "turnover", "market_cap"]].to_numpy()).all():
+    if not np.isfinite(prices[numeric_columns].to_numpy()).all():
         raise ReplicationUnavailable("prices contains non-finite values")
     if prices["date"].nunique() < 3:
         raise ReplicationUnavailable("At least three trading dates are required")
     if prices["date"].min() < benchmark["date"].min() or prices["date"].max() > benchmark["date"].max():
         raise ReplicationUnavailable("benchmark does not cover the full prices date range")
 
-    return MarketData(prices, benchmark, prices_path, benchmark_path)
+    return MarketData(prices, benchmark, prices_path, benchmark_path, profile)

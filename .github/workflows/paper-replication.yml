@@ -91,7 +91,9 @@ jobs:
           python run_replication.py --config "$CONFIG_PATH" 2>&1 | tee logs/backtest.log
 
       - name: Validate current report
-        run: python tools/validate_report.py
+        run: |
+          python tools/validate_backtest.py --config "$CONFIG_PATH" --data-path "$REPLICATION_DATA_PATH" --outputs outputs
+          python tools/validate_report.py
 
       - name: Upload outputs and logs
         if: ${{ always() }}

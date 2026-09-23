@@ -57,7 +57,7 @@ def generate_rotation_signals(
                     "execution_date": execution_date,
                     "asset": item["asset"],
                     "asset_type": item["asset_type"],
-                    "industry": item["industry"],
+                    "industry": item.get("industry", pd.NA),
                     "score": item["score"],
                     "rank": int(rank),
                     "selected": item["asset"] in selected_assets,

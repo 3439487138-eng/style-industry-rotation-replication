@@ -5,13 +5,14 @@ The repository now includes an executable strategy implementation at
 `strategy.adapter:run_strategy`; it connects the engineering runner to the
 real-data factor, signal, portfolio and reporting pipeline.
 
-The implementation preserves the rules that can be verified from the retained
-research source: 20-day momentum, beta/size/volatility/liquidity exposures,
-cross-sectional winsorization and standardization, industry-dummy OLS
-neutralization, residual ranking, and next-period return evaluation. Rules that
-cannot be recovered from the source (for example production Top-N, rebalance
-frequency and trading costs) remain explicit configuration parameters and are
-reported as a practical adaptation.
+Two real-data profiles are implemented. The default medium-fidelity public-index
+profile follows the teacher project's documented momentum, reversal, volatility
+and drawdown proxy method. The optional stock-panel profile preserves 20-day
+momentum, beta/size/volatility/liquidity exposures, cross-sectional winsorization
+and standardization, industry-dummy OLS neutralization, residual ranking, and
+next-period return evaluation. Rules that cannot be recovered from source (for
+example exact proxy windows/weights, production Top-N and trading costs) remain
+explicit configuration parameters and are reported as practical adaptations.
 
 ## Callable
 

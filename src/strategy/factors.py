@@ -21,10 +21,19 @@ class FactorSettings:
     winsorize_quantile: float
     neutralize_industry: bool
     min_cross_section: int
+    mode: str = "stock_panel_neutralized"
+    reversal_window: int = 20
+    drawdown_window: int = 126
+    momentum_weight: float = 0.25
+    reversal_weight: float = 0.25
+    volatility_weight: float = 0.25
+    drawdown_weight: float = 0.25
 
     @classmethod
     def from_config(cls, strategy: Mapping[str, Any]) -> "FactorSettings":
         signal = strategy.get("signal", {})
+        mode = str(strategy.get("mode", "stock_panel_neutralized")).lower()
+        weights = signal.get("weights", {})
         settings = cls(
             momentum_window=int(signal.get("momentum_window", 20)),
             beta_window=int(signal.get("beta_window", 60)),
@@ -33,6 +42,13 @@ class FactorSettings:
             winsorize_quantile=float(signal.get("winsorize_quantile", 0.01)),
             neutralize_industry=bool(signal.get("neutralize_industry", True)),
             min_cross_section=int(signal.get("min_cross_section", 5)),
+            mode=mode,
+            reversal_window=int(signal.get("reversal_window", 20)),
+            drawdown_window=int(signal.get("drawdown_window", 126)),
+            momentum_weight=float(weights.get("momentum", 0.25)),
+            reversal_weight=float(weights.get("reversal", 0.25)),
+            volatility_weight=float(weights.get("volatility", 0.25)),
+            drawdown_weight=float(weights.get("drawdown", 0.25)),
         )
         if min(
             settings.momentum_window,
@@ -45,6 +61,20 @@ class FactorSettings:
             raise ConfigurationError("winsorize_quantile must be in [0, 0.5)")
         if settings.min_cross_section < 3:
             raise ConfigurationError("min_cross_section must be at least 3")
+        if settings.mode not in {"stock_panel_neutralized", "public_index_proxy"}:
+            raise ConfigurationError(
+                "strategy.mode must be stock_panel_neutralized or public_index_proxy"
+            )
+        if min(settings.reversal_window, settings.drawdown_window) < 2:
+            raise ConfigurationError("reversal_window and drawdown_window must be at least 2")
+        score_weights = (
+            settings.momentum_weight,
+            settings.reversal_weight,
+            settings.volatility_weight,
+            settings.drawdown_weight,
+        )
+        if min(score_weights) < 0 or sum(score_weights) <= 0:
+            raise ConfigurationError("public index proxy weights must be non-negative and nonzero")
         return settings
 
 
@@ -114,6 +144,53 @@ def _neutralize_one_date(group: pd.DataFrame, settings: FactorSettings) -> pd.Da
     return output
 
 
+def _index_proxy_exposures(group: pd.DataFrame, settings: FactorSettings) -> pd.DataFrame:
+    ordered = group.sort_values("date").copy()
+    ordered["asset_return"] = ordered["close"].pct_change(fill_method=None)
+    ordered["momentum"] = ordered["close"].pct_change(
+        settings.momentum_window, fill_method=None
+    )
+    short_return = ordered["close"].pct_change(
+        settings.reversal_window, fill_method=None
+    )
+    ordered["reversal"] = -short_return
+    ordered["volatility"] = -ordered["asset_return"].rolling(
+        settings.volatility_window, min_periods=settings.volatility_window
+    ).std(ddof=0)
+    rolling_peak = ordered["close"].rolling(
+        settings.drawdown_window, min_periods=settings.drawdown_window
+    ).max()
+    ordered["drawdown"] = ordered["close"] / rolling_peak - 1
+    return ordered
+
+
+def _score_index_proxy_one_date(
+    group: pd.DataFrame, settings: FactorSettings
+) -> pd.DataFrame:
+    output = group.copy()
+    columns = ["momentum", "reversal", "volatility", "drawdown"]
+    valid = output.dropna(subset=columns).copy()
+    if len(valid) < settings.min_cross_section:
+        output["score"] = np.nan
+        return output
+    standardized = valid[columns].apply(
+        lambda series: zscore(winsorize(series, settings.winsorize_quantile))
+    )
+    weights = np.array(
+        [
+            settings.momentum_weight,
+            settings.reversal_weight,
+            settings.volatility_weight,
+            settings.drawdown_weight,
+        ],
+        dtype=float,
+    )
+    weights /= weights.sum()
+    output["score"] = np.nan
+    output.loc[valid.index, "score"] = standardized.to_numpy() @ weights
+    return output
+
+
 def calculate_factor_scores(
     market: MarketData, settings: FactorSettings
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -125,13 +202,23 @@ def calculate_factor_scores(
     if panel["benchmark_return"].isna().sum() > panel["asset"].nunique():
         raise ReplicationUnavailable("Benchmark returns are missing inside the price sample")
 
+    exposure_function = (
+        _index_proxy_exposures
+        if settings.mode == "public_index_proxy"
+        else _asset_exposures
+    )
+    score_function = (
+        _score_index_proxy_one_date
+        if settings.mode == "public_index_proxy"
+        else _neutralize_one_date
+    )
     calculated = [
-        _asset_exposures(group, settings)
+        exposure_function(group, settings)
         for _, group in panel.groupby("asset", sort=True, observed=True)
     ]
     factors = pd.concat(calculated, ignore_index=True)
     scored = [
-        _neutralize_one_date(group, settings)
+        score_function(group, settings)
         for _, group in factors.groupby("date", sort=True, observed=True)
     ]
     factors = pd.concat(scored, ignore_index=True).sort_values(["date", "asset"])

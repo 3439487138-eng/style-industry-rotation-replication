@@ -8,9 +8,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_default_entrypoint_exits_cleanly_without_traceback() -> None:
+def test_missing_data_entrypoint_exits_cleanly_without_traceback(tmp_path: Path) -> None:
     result = subprocess.run(
-        [sys.executable, "run_replication.py", "--check"],
+        [
+            sys.executable,
+            "run_replication.py",
+            "--check",
+            "--data-path",
+            str(tmp_path / "missing-input"),
+        ],
         cwd=ROOT,
         text=True,
         encoding="utf-8",

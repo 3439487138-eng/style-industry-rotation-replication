@@ -12,13 +12,18 @@ from replication.errors import ConfigurationError, ReplicationUnavailable
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_default_config_has_real_adapter_but_fails_on_missing_data() -> None:
+def test_default_config_has_real_adapter_and_missing_override_fails(tmp_path: Path) -> None:
     config_path = ROOT / "config" / "base.yaml"
     project = load_project_config(config_path, ROOT)
     assert project.adapter == "strategy.adapter:run_strategy"
     assert project.display_data_path == "data/input"
     with pytest.raises(ReplicationUnavailable, match="prices.csv.*benchmark.csv"):
-        load_project_config(config_path, ROOT, require_ready=True)
+        load_project_config(
+            config_path,
+            ROOT,
+            data_path_override=tmp_path / "missing-input",
+            require_ready=True,
+        )
 
 
 def _write_config(path: Path, **data_changes: object) -> None:

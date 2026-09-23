@@ -8,18 +8,27 @@ cost_bps_per_unit_turnover: 10.0
 
 strategy:
   adapter: "strategy.adapter:run_strategy"
-  mode: "practical adaptation"
+  # Audited public-data path used by the current real run. The original
+  # stock-panel neutralization remains available as stock_panel_neutralized.
+  mode: "public_index_proxy"
   signal:
-    raw_factor: "momentum"
-    momentum_window: 20
+    raw_factor: "style_proxy_composite"
+    momentum_window: 126
+    reversal_window: 20
+    drawdown_window: 126
     beta_window: 60
     volatility_window: 20
     liquidity_window: 20
     winsorize_quantile: 0.01
-    neutralize_industry: true
-    min_cross_section: 5
+    neutralize_industry: false
+    min_cross_section: 4
+    weights:
+      momentum: 0.25
+      reversal: 0.25
+      volatility: 0.25
+      drawdown: 0.25
   selection:
-    top_n: 3
+    top_n: 1
     weighting: "equal"
   backtest:
     rebalance_frequency: "monthly"
@@ -33,6 +42,7 @@ strategy:
 # No synthetic, demo, random, or fallback provider is allowed.
 data:
   provider: "local_files"
+  profile: "public_index_proxy"
   path: "data/input"
   allow_network: false
   required_env: []

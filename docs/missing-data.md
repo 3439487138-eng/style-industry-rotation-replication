@@ -1,14 +1,16 @@
-# Current Missing Data
+# Remaining Higher-Fidelity Data Gap
 
-The audited repository does not contain a sufficiently long, complete real panel for the formal strategy.
+The current public-index proxy backtest is complete and uses six real equity-index
+snapshots. The following inputs remain unavailable only for the higher-fidelity
+individual-stock industry-neutralized baseline:
 
-Missing production inputs:
-
-- `data/input/prices.csv` with `date, asset, close, turnover, market_cap, industry, asset_type`;
-- `data/input/benchmark.csv` with `date, close`;
+- a stock-level panel with `date, asset, close, turnover, market_cap, industry, asset_type`;
 - point-in-time industry history if the investable assets are stocks;
-- provenance, extraction timestamp, adjustment convention, coverage and redistribution permission for both files.
+- adjustment conventions and redistribution permission for that stock panel.
 
 The local `计算机.xlsx` contains only two endpoint dates for a small set of indices. It cannot support rolling factors, periodic rebalancing, transaction costs, or reliable performance statistics and is therefore not used.
 
-Until the files above are supplied, `python run_replication.py --config config/base.yaml` exits nonzero and lists the missing files. No output metrics are generated.
+The default configuration does not fabricate these fields. It selects the
+medium-fidelity `public_index_proxy`, whose successful outputs are stored under
+`outputs/`. Switching to `stock_panel_neutralized` still requires the missing
+authorized fields above.

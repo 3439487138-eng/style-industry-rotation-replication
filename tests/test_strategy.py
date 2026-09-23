@@ -70,6 +70,47 @@ def test_factor_scores_do_not_use_future_prices(tmp_path: Path) -> None:
     pd.testing.assert_frame_equal(left.reset_index(drop=True), right.reset_index(drop=True))
 
 
+def test_public_index_proxy_uses_only_price_history(tmp_path: Path) -> None:
+    def index_market(future_multiplier: float) -> MarketData:
+        market = _market_data(tmp_path, future_multiplier)
+        index_prices = market.prices.rename(columns={"turnover": "volume"}).drop(
+            columns=["market_cap", "industry"]
+        )
+        index_prices["source"] = "test fixture only"
+        return MarketData(
+            index_prices,
+            market.benchmark,
+            market.prices_path,
+            market.benchmark_path,
+            "public_index_proxy",
+        )
+
+    settings = FactorSettings(
+        momentum_window=3,
+        beta_window=3,
+        volatility_window=3,
+        liquidity_window=3,
+        winsorize_quantile=0.01,
+        neutralize_industry=False,
+        min_cross_section=8,
+        mode="public_index_proxy",
+        reversal_window=2,
+        drawdown_window=3,
+    )
+    factors, _ = calculate_factor_scores(index_market(1.0), settings)
+    changed, _ = calculate_factor_scores(index_market(5.0), settings)
+    cutoff = pd.Timestamp("2024-01-12")
+    columns = ["date", "asset", "score"]
+    pd.testing.assert_frame_equal(
+        factors.loc[factors["date"].le(cutoff), columns].reset_index(drop=True),
+        changed.loc[changed["date"].le(cutoff), columns].reset_index(drop=True),
+    )
+    assert factors["score"].notna().any()
+    assert {"momentum", "reversal", "volatility", "drawdown"}.issubset(
+        factors.columns
+    )
+
+
 def test_signal_executes_after_signal_date(tmp_path: Path) -> None:
     factors, _ = calculate_factor_scores(_market_data(tmp_path), _settings())
     strategy = {

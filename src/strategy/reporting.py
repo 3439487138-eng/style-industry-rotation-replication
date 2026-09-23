@@ -50,7 +50,18 @@ def write_strategy_outputs(
     _write_csv(performance, output / "performance_metrics.csv")
     _write_csv(monthly_returns, output / "monthly_returns.csv")
     _write_csv(
-        daily[["date", "strategy_nav", "benchmark_nav", "net_return", "benchmark_return"]],
+        daily[
+            [
+                "date",
+                "gross_return",
+                "transaction_cost",
+                "net_return",
+                "turnover",
+                "strategy_nav",
+                "benchmark_return",
+                "benchmark_nav",
+            ]
+        ],
         output / "nav_curve.csv",
     )
     _write_csv(positions, output / "positions.csv")
@@ -89,6 +100,14 @@ def write_strategy_outputs(
         f"- {key}: {value:.6f}" if isinstance(value, float) else f"- {key}: {value}"
         for key, value in metrics.items()
     )
+    mode = str(strategy_config.get("mode", "stock_panel_neutralized"))
+    method_note = (
+        "The current run is the medium-fidelity public-index proxy. It uses no "
+        "market-cap, turnover or industry field because no real local panel for "
+        "those fields was found; volume is not treated as turnover."
+        if mode == "public_index_proxy"
+        else "The current run uses the configured stock-panel industry-neutralized model."
+    )
     report = f"""# Backtest Report
 
 This report was generated from the current run's declared real CSV inputs. It is a practical adaptation, not a claim that the paper's unavailable production rules were exactly matched.
@@ -96,6 +115,8 @@ This report was generated from the current run's declared real CSV inputs. It is
 ## Data
 
 {data_description}
+
+{method_note}
 
 ## Performance
 
@@ -105,7 +126,7 @@ This report was generated from the current run's declared real CSV inputs. It is
 
 - Signals use observations available through each signal close.
 - Rebalancing occurs at the next available close; new weights affect subsequent close-to-close returns.
-- Equal weighting follows the available demo implementation.
+- Equal weighting and selection breadth follow the explicit configuration.
 - Commission and slippage are deducted from portfolio return on each rebalance.
 - Missing returns for held assets stop the run; they are never filled with zero.
 - No fundamental fields are used, so financial statement publication-date alignment is not applicable.

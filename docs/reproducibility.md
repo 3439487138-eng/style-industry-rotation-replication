@@ -17,11 +17,11 @@ The paper describes the principles of risk-model neutralization and style/indust
 
 ## Execution boundary
 
-`run_replication.py` is the supported entrypoint. It invokes `strategy.adapter:run_strategy`, which executes validated real-data loading, factor calculation, cross-sectional neutralization, lagged rotation signals, portfolio construction, costs, returns, metrics and artifacts. Missing production data remains `unavailable`; the strategy implementation itself is no longer a placeholder.
+`run_replication.py` is the supported entrypoint. It invokes `strategy.adapter:run_strategy`, which executes validated real-data loading, factor calculation, lagged rotation signals, portfolio construction, costs, returns, metrics and artifacts. The default `public_index_proxy` performs a current real-data run on six audited public index snapshots. The optional `stock_panel_neutralized` profile performs cross-sectional style/industry neutralization when its higher-fidelity fields are supplied.
 
 ## External requirements
 
-An authorized run must supply the CSV fields documented in `docs/data_requirements.md` and their provenance. The exact original Top-N, rebalance frequency, cost split and optimization constraints remain unavailable, so configured values are labelled practical adaptations. Saved charts or old outputs cannot satisfy a current execution.
+An authorized run must supply one of the CSV profiles documented in `docs/data_requirements.md` and its provenance. The exact original proxy windows, score weights, Top-N, cost split and optimization constraints remain unavailable, so configured values are labelled practical adaptations. Saved charts or old outputs cannot satisfy a current execution.
 
 ## Security
 

@@ -2,7 +2,29 @@
 
 The formal strategy reads real observations from a local directory. No fixture, demo, cached result, or generated market value is accepted by the production entrypoint.
 
-## `prices.csv`
+Two input profiles are supported. `public_index_proxy` is the audited real-data
+profile used by the current published run. `stock_panel` remains available for
+the higher-fidelity industry-neutralized model when authorized fields exist.
+
+## `prices.csv`: public index proxy
+
+| Field | Type | Meaning |
+|---|---|---|
+| `date` | date | Trading date |
+| `asset` | string | Equity-index code |
+| `asset_name` | string | Human-readable index name (provenance only) |
+| `close` | positive float | Index close |
+| `volume` | non-negative float | Published index volume; never relabelled as turnover |
+| `asset_type` | string | `equity_index` for the audited universe |
+| `source` | string | Source label retained from the downloaded snapshot |
+
+The current source is the six public AkShare/Sina index snapshots recovered
+from the teacher project. The converter is `tools/prepare_open_index_data.py`.
+This profile does not require or fabricate market capitalization, turnover or
+industry. It supports the documented public style proxy, not stock-level
+industry neutralization.
+
+## `prices.csv`: stock panel
 
 One row per trading date and investable asset:
 
