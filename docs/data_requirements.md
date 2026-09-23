@@ -19,7 +19,10 @@ the higher-fidelity industry-neutralized model when authorized fields exist.
 | `source` | string | Source label retained from the downloaded snapshot |
 
 The current source is the six public AkShare/Sina index snapshots recovered
-from the teacher project. The converter is `tools/prepare_open_index_data.py`.
+from the teacher project and versioned under `data/public_index_snapshot/`.
+`manifest.json` locks source and transformed files by SHA-256, row count and
+date coverage. The converter is `tools/prepare_open_index_data.py`; both local
+and GitHub Actions runs use this same fixed snapshot and converter.
 This profile does not require or fabricate market capitalization, turnover or
 industry. It supports the documented public style proxy, not stock-level
 industry neutralization.

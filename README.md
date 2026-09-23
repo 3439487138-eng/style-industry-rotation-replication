@@ -2,7 +2,7 @@
 
 这是一个可执行的风格/行业轮动回测工程。正式入口已经连接完整的“数据→因子→评分→轮动信号→组合→调仓成本→净值→指标→报告”链路，不再使用 `UNAVAILABLE` 策略占位器，也不会把 demo、测试夹具、缓存或旧结果作为正式回测证据。
 
-当前默认配置已经使用老师项目中可追溯的 6 个 AkShare/Sina 公开指数快照完成真实数据回测。原始行情转换后保存在被 Git 忽略的 `data/input/`，公开仓库只提交转换脚本、数据契约和本次计算结果。由于本机仍无完整个股市值、换手率及点时行业面板，本次结果是老师项目同样采用的中等保真“公开指数代理”，不是个股行业中性化收益复现。
+当前默认配置已经使用老师项目中可追溯的 6 个 AkShare/Sina 公开指数快照完成真实数据回测。公开仓库提交固定快照、逐文件 SHA-256 清单和转换脚本；本地与 GitHub Actions 均由它们确定性生成被 Git 忽略的 `data/input/`。由于仍无完整个股市值、换手率及点时行业面板，本次结果是老师项目同样采用的中等保真“公开指数代理”，不是个股行业中性化收益复现。
 
 ## 策略依据与边界
 
@@ -39,7 +39,7 @@
 - `prices.csv`：`date,asset,asset_name,close,volume,asset_type,source`
 - `benchmark.csv`：`date,close,source`
 
-转换命令为 `tools/prepare_open_index_data.py --source-dir <老师项目的 data/open_source> --output-dir data/input`。字段定义、时间对齐及个股面板要求见 [data_requirements.md](docs/data_requirements.md)。模板位于 `data/templates/`，不包含虚构观察值；更高保真度仍缺的字段见 [missing-data.md](docs/missing-data.md)。
+公开快照位于 `data/public_index_snapshot/`。转换命令为 `python tools/prepare_open_index_data.py --source-dir data/public_index_snapshot --manifest data/public_index_snapshot/manifest.json --output-dir data/input`；转换前会核验来源文件的校验值、行数、日期、字段和代码，转换后还会核验 `prices.csv` 与 `benchmark.csv` 的校验值。字段定义、时间对齐及个股面板要求见 [data_requirements.md](docs/data_requirements.md)。模板位于 `data/templates/`，不包含虚构观察值；更高保真度仍缺的字段见 [missing-data.md](docs/missing-data.md)。
 
 `计算机.xlsx` 只有少量指数的两个端点，无法计算滚动因子、月度调仓和可靠绩效，正式策略不会使用它。
 
@@ -99,10 +99,10 @@ Windows：
 
 工作流分为两层：
 
-- `push`、`pull_request`、普通 `workflow_dispatch`：安装依赖、校验配置、编译源码、运行 16+ 项测试，并在隔离临时目录中验证完整策略链。测试夹具不会写入正式 `outputs/`，也不代表收益结果。
-- 手动勾选 `run_full`：从 `REPLICATION_DATA_ARCHIVE_URL` 下载授权 ZIP，可选使用 `REPLICATION_DATA_ARCHIVE_TOKEN`，随后执行正式入口、报告校验、Artifact 上传和同分支结果提交。任一步失败都会使工作流失败。
+- `Style-industry rotation public checks`：在 `push` 和 `pull_request` 上安装锁定依赖、校验配置、编译源码、运行测试并审计上传清单。测试夹具不会写入正式 `outputs/`，也不代表收益结果。
+- `Style-industry rotation full backtest`：通过 `workflow_dispatch` 手动触发。工作流核验仓库内固定公开快照的 SHA-256，自动生成 `data/input/prices.csv` 和 `benchmark.csv`，清除上次生成物后执行 `python run_replication.py --config config/base.yaml`，运行回测与报告校验，检查绩效和净值文件，上传 `outputs/` 与日志为 Artifact，并把本次重新计算的公开结果提交到所选分支。任何步骤失败都会使运行失败，不使用 `continue-on-error`。
 
-私有 ZIP 根目录应直接包含 `prices.csv` 和 `benchmark.csv`。以上变量在 GitHub 中配置为 Secrets，数据目录、下载文件和日志不会被强制加入 Git。
+完整公开指数回测不需要 GitHub Secrets、Token 或授权数据库。固定快照的来源、覆盖期和校验值见 [data/public_index_snapshot/README.md](data/public_index_snapshot/README.md) 与 `manifest.json`。
 
 ## 原始研究源码
 

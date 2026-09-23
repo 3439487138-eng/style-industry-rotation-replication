@@ -21,6 +21,15 @@ FORBIDDEN_PARTS = {
 }
 FORBIDDEN_SUFFIXES = {".db", ".log", ".pdf", ".pyc", ".sqlite", ".xlsx"}
 REQUIRED_LEGACY = {
+    ".github/workflows/paper-replication.yml",
+    ".github/workflows/public-checks.yml",
+    "data/public_index_snapshot/manifest.json",
+    "data/public_index_snapshot/sh000016.csv",
+    "data/public_index_snapshot/sh000300.csv",
+    "data/public_index_snapshot/sh000688.csv",
+    "data/public_index_snapshot/sh000852.csv",
+    "data/public_index_snapshot/sh000905.csv",
+    "data/public_index_snapshot/sz399006.csv",
     "panda_factor/LICENSE",
     "examples/style_industry_neutralize_demo.py",
     "panda_factor/panda_factor/panda_factor/analysis/alpha_calculator.py",
@@ -31,6 +40,7 @@ REQUIRED_LEGACY = {
     "src/strategy/adapter.py",
     "src/strategy/factors.py",
     "src/strategy/portfolio.py",
+    "tools/clean_generated_outputs.py",
 }
 
 

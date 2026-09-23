@@ -4,7 +4,7 @@ This report was generated from the current run's declared real CSV inputs. It is
 
 ## Data
 
-Provider: local_files; profile: public_index_proxy; prices: prices.csv (11999 rows, 6 assets); benchmark: benchmark.csv (2081 rows);  sources: Sina Finance via AkShare stock_zh_index_daily; coverage: 2018-01-02 to 2026-07-31; prices_sha256: d1b3212339f76742692d6e126473f9feae9a16244e9ad9889f5d07e2a482c435; benchmark_sha256: 844279212f09d362c5663bbb53703f71db82782252076abc709eebb71d83cdd9.
+Provider: local_files; profile: public_index_proxy; prices: prices.csv (11999 rows, 6 assets); benchmark: benchmark.csv (2081 rows);  sources: Sina Finance via AkShare stock_zh_index_daily; coverage: 2018-01-02 to 2026-07-31; prices_sha256: 6d6634d48e8193de4fc3887f1c04021f568b4522ed69243a33477c577e8c6f2b; benchmark_sha256: 5f0325175635d29fdb45622dbdde1caec6b4ce230b2689a3c206a57f3c22a0fc.
 
 The current run is the medium-fidelity public-index proxy. It uses no market-cap, turnover or industry field because no real local panel for those fields was found; volume is not treated as turnover.
 

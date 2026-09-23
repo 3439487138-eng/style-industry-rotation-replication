@@ -2,9 +2,18 @@
 # Paths are repository-relative. Data, caches, binaries and local configuration are absent.
 .env.example
 .github/workflows/paper-replication.yml
+.github/workflows/public-checks.yml
 .gitignore
 config/base.yaml
 config/data_example.yaml
+data/public_index_snapshot/manifest.json
+data/public_index_snapshot/README.md
+data/public_index_snapshot/sh000016.csv
+data/public_index_snapshot/sh000300.csv
+data/public_index_snapshot/sh000688.csv
+data/public_index_snapshot/sh000852.csv
+data/public_index_snapshot/sh000905.csv
+data/public_index_snapshot/sz399006.csv
 data/README.md
 data/templates/benchmark.csv
 data/templates/index_prices.csv
@@ -87,7 +96,7 @@ tests/test_report.py
 tests/test_strategy.py
 tools/audit_repository.py
 tools/check_upload_manifest.py
-tools/download_private_data.py
+tools/clean_generated_outputs.py
 tools/inventory_local_data.py
 tools/prepare_open_index_data.py
 tools/render_report.py

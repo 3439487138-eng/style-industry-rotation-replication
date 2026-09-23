@@ -21,7 +21,9 @@ The paper describes the principles of risk-model neutralization and style/indust
 
 ## External requirements
 
-An authorized run must supply one of the CSV profiles documented in `docs/data_requirements.md` and its provenance. The exact original proxy windows, score weights, Top-N, cost split and optimization constraints remain unavailable, so configured values are labelled practical adaptations. Saved charts or old outputs cannot satisfy a current execution.
+The default public-index run requires no private account or credential. Six fixed public snapshots are committed under `data/public_index_snapshot/`; their manifest verifies every source file and the deterministic production inputs. The exact original proxy windows, score weights, Top-N, cost split and optimization constraints remain unavailable, so configured values are labelled practical adaptations. Saved charts or old outputs cannot satisfy a current execution. The higher-fidelity stock-panel profile still requires the authorized fields documented in `docs/data_requirements.md`.
+
+The manual-only `Style-industry rotation full backtest` workflow rebuilds `data/input/`, removes all known generated outputs, runs the formal entrypoint and validators, uploads the outputs and log as an Artifact, and commits only current-run generated outputs. Push and pull-request checks remain read-only.
 
 ## Security
 
