@@ -6,8 +6,10 @@ stock_zh_index_daily`; coverage ends on 2026-07-31. They contain only public
 index OHLCV observations and no account, credential, licensed stock panel or
 private classification data.
 
-`manifest.json` locks every source file by SHA-256, row count and date range and
-also locks the deterministic `prices.csv` and `benchmark.csv` produced by:
+`manifest.json` locks every source file by canonical-LF SHA-256, row count and
+date range, so Git's Windows/Unix checkout line endings cannot change the
+identity of the observations. It also locks the byte-exact deterministic
+`prices.csv` and `benchmark.csv` produced by:
 
 ```bash
 python tools/prepare_open_index_data.py \

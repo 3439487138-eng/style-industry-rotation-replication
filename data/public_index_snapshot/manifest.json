@@ -5,37 +5,37 @@
   "coverage_end": "2026-07-31",
   "files": {
     "sh000016.csv": {
-      "sha256": "667f4612c18f4eb36d356b54844a25cac1624c220506515ecacfe5d2caa09fbd",
+      "sha256": "8082c17ecd3ee44836405de6d5bc03d98b3526aac1b4213aabe2fa29ff9468ff",
       "rows": 2081,
       "start_date": "2018-01-02",
       "end_date": "2026-07-31"
     },
     "sh000300.csv": {
-      "sha256": "3c1d1847db3e824afa2c049d0ce0d2365ab212d239001dbdeb6beaf7243be135",
+      "sha256": "7760ef37aad796054e413e2565b727e544bfd57c413f94ebfff1cbff20b9b424",
       "rows": 2081,
       "start_date": "2018-01-02",
       "end_date": "2026-07-31"
     },
     "sh000688.csv": {
-      "sha256": "3d910a0f40c0579e99430b2af66a6e279f2b782e76d0bde94ca5b909bf61d6ff",
+      "sha256": "30875546fbc162654482dee923470684e46626256a76abbe14f835e65e4d1465",
       "rows": 1594,
       "start_date": "2020-01-02",
       "end_date": "2026-07-31"
     },
     "sh000852.csv": {
-      "sha256": "dcd547187a1f243d82f25ef3e69a95b0b0b380d33cd7ab97d97ea5365b091da5",
+      "sha256": "7470b3d291e2784a6df860bf0b3c38ea54453eb2eaa5f18a78eff806d0b4ef19",
       "rows": 2081,
       "start_date": "2018-01-02",
       "end_date": "2026-07-31"
     },
     "sh000905.csv": {
-      "sha256": "b1a71f72b4ca56048470f52a21c1db6b31cfbe0fb42b1252830f7243469bad02",
+      "sha256": "769089dc8545e74c10d52ceeeb473976a25a5fc6f2e79fb158d731bc3ed24741",
       "rows": 2081,
       "start_date": "2018-01-02",
       "end_date": "2026-07-31"
     },
     "sz399006.csv": {
-      "sha256": "3eb7adb784f31e8c3623218a8d8f7dc7d02e34888a0f9659d87dab4e5aed4280",
+      "sha256": "8feea6fba62dd9ddf43cad867587063ec6539e34f2cd6ebf4046ab25c985ce9d",
       "rows": 2081,
       "start_date": "2018-01-02",
       "end_date": "2026-07-31"

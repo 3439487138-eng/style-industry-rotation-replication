@@ -35,10 +35,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def sha256(path: Path) -> str:
+def sha256(path: Path, *, canonical_text: bool = False) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            if canonical_text:
+                chunk = chunk.replace(b"\r\n", b"\n")
             digest.update(chunk)
     return digest.hexdigest()
 
@@ -66,7 +68,7 @@ def read_symbol(
     expected = manifest.get("files", {}).get(path.name) if manifest else None
     if manifest and not expected:
         raise ValueError(f"Snapshot manifest has no entry for {path.name}")
-    if expected and sha256(path) != expected.get("sha256"):
+    if expected and sha256(path, canonical_text=True) != expected.get("sha256"):
         raise ValueError(f"SHA-256 mismatch for {path.name}")
     frame = pd.read_csv(path)
     missing = sorted(REQUIRED_SOURCE_COLUMNS - set(frame.columns))
