@@ -99,9 +99,9 @@ def _validate_ready(config: ProjectConfig) -> None:
     provider = config.data_provider.strip().lower()
     if adapter in UNAVAILABLE_VALUES:
         raise ReplicationUnavailable(
-            "No complete strategy implementation is present. Configure "
-            "strategy.adapter as an importable 'module:function' only after supplying "
-            "the original strategy engine."
+            "strategy.adapter is not configured. Set it to an importable "
+            "'module:function'; the built-in production implementation is "
+            "strategy.adapter:run_strategy."
         )
     if ":" not in config.adapter:
         raise ConfigurationError("strategy.adapter must use 'module:function' syntax.")
@@ -124,12 +124,26 @@ def _validate_ready(config: ProjectConfig) -> None:
 
     if provider == "local_files":
         if not config.data_path.exists():
+            required_files = config.raw.get("data", {}).get("required_files", [])
+            suffix = (
+                " Required files: " + ", ".join(str(item) for item in required_files)
+                if required_files
+                else ""
+            )
             raise ReplicationUnavailable(
-                f"Configured data path does not exist: {config.display_data_path}"
+                f"Configured data path does not exist: {config.display_data_path}.{suffix}"
             )
         if config.data_path.is_dir() and not any(config.data_path.iterdir()):
             raise ReplicationUnavailable(
                 f"Configured data directory is empty: {config.display_data_path}"
+            )
+        required_files = config.raw.get("data", {}).get("required_files", [])
+        missing_files = [
+            str(name) for name in required_files if not (config.data_path / str(name)).is_file()
+        ]
+        if missing_files:
+            raise ReplicationUnavailable(
+                "Required production data files are missing: " + ", ".join(missing_files)
             )
 
 

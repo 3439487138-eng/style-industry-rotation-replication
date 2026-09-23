@@ -1,5 +1,5 @@
 # Input data contract
 
-Place only authorized production inputs under `data/input/`, or override the location with `REPLICATION_DATA_PATH` / `--data-path`. The input directory is ignored by Git.
+Place only authorized `prices.csv` and `benchmark.csv` under `data/input/`, or override the location with `REPLICATION_DATA_PATH` / `--data-path`. Input and private download directories are ignored by Git.
 
-The repository currently has no complete schema because the original production strategy adapter is unavailable. The adapter must validate its exact files, collections, fields, point-in-time rules, dates, and coverage before calculation. It must fail when required observations are missing and must not substitute demo or synthetic data.
+The complete schema, timing rules and missing-data policy are documented in `docs/data_requirements.md`. Header-only templates live in `data/templates/`. The production loader rejects missing, duplicate, non-finite and invalid observations and never substitutes demo or synthetic data.

@@ -17,11 +17,11 @@ The paper describes the principles of risk-model neutralization and style/indust
 
 ## Execution boundary
 
-`run_replication.py` is the only supported replication entrypoint. It contains no factor or portfolio formulas. It validates declared real inputs, invokes a configured adapter to the original engine, validates current-run evidence, and writes reports atomically. The default status is `unavailable` until that external capability is supplied.
+`run_replication.py` is the supported entrypoint. It invokes `strategy.adapter:run_strategy`, which executes validated real-data loading, factor calculation, cross-sectional neutralization, lagged rotation signals, portfolio construction, costs, returns, metrics and artifacts. Missing production data remains `unavailable`; the strategy implementation itself is no longer a placeholder.
 
 ## External requirements
 
-An authorized implementation must supply the precise factor construction, signal combination, universe rules, exposure/optimization constraints, rebalancing and execution timing, transaction-cost calculation, performance metrics, and data lineage. Any private credentials remain environment variables. Saved charts or old outputs cannot satisfy this requirement.
+An authorized run must supply the CSV fields documented in `docs/data_requirements.md` and their provenance. The exact original Top-N, rebalance frequency, cost split and optimization constraints remain unavailable, so configured values are labelled practical adaptations. Saved charts or old outputs cannot satisfy a current execution.
 
 ## Security
 

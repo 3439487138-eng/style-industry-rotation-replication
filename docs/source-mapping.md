@@ -4,7 +4,7 @@ This mapping separates preserved research source from the supported replication 
 
 | Original file | GitHub file | Main function | Complete? | In `run_replication.py`? | Reason / limitation |
 |---|---|---|---|---|---|
-| `panda_factor/scripts/style_industry_neutralize_demo.py` | same path | 20-day momentum; rolling Beta, size, volatility and liquidity; SW industry/style OLS residual; Top-50 next-day toy PnL | Partial/demo | No | Explicit toy backtest, fallback benchmark proxy, no production portfolio/cost/report chain |
+| `panda_factor/scripts/style_industry_neutralize_demo.py` | `examples/style_industry_neutralize_demo.py` | 20-day momentum; rolling Beta, size, volatility and liquidity; SW industry/style OLS residual; Top-50 next-day toy PnL | Partial/demo | No | Moved under examples; fallback benchmark proxy and no production portfolio/cost/report chain |
 | `panda_factor/panda_factor/panda_factor/analysis/alpha_calculator.py` | same path | Portfolio excess-return regression on market, style and industry factors | Partial | No | Requires undocumented MongoDB collections; fixed 3% annual risk-free simplification |
 | `scripts/calculate_alpha.py` | same path | Parameterized CLI for the legacy Alpha calculator | Example only | No | Four-stock defaults are retained as an example, not a strategy universe |
 | `panda_factor/panda_factor/panda_factor/analysis/factor_func.py` | same path | Adjusted prices/future returns, tradability cleaning, MAD/3σ processing, size/industry/Barra neutralization, z-score and quantile grouping | Function collection | No | Depends on local `panda_data`; grouping adds tiny random noise for tied bins; legacy file roots are now environment-driven |
@@ -16,7 +16,8 @@ This mapping separates preserved research source from the supported replication 
 | `panda_factor/panda_factor/panda_factor/data/*.py` | same paths | Abstract/Panda data provider and market-data cleaner | Interface layer | No | Concrete `panda_data` database runtime and authorized observations are not included |
 | `panda_factor/panda_common/panda_common/{config.py,logger_config.py,handlers,models,utils}` (selected files) | same paths | Environment-aware config loader, database abstraction, logging, chart/parameter models and stock-code utility | Supporting subset | No | Sensitive `config.yaml` is excluded; only support files required to understand the research chain are retained |
 | `大类.py` | same path | Public AkShare interval comparison for eight style indices | Complete for interval comparison | No | Not a backtest, signal engine or portfolio strategy |
-| `run_replication.py` | same path | Validate production inputs, load a real `module:function` adapter, execute it and generate auditable reports | Complete orchestration | Yes | Stops with `UNAVAILABLE` until the original production strategy and authorized data are supplied |
+| Existing neutralization, factor and performance fragments | `src/strategy/*.py` | Real-data loader, style exposures, OLS neutralized score, periodic signals, equal-weight execution, costs, NAV, metrics and artifacts | Complete practical adaptation | Yes | Unknown production choices are explicit config parameters; no synthetic production data |
+| `run_replication.py` | same path | Validate production inputs, load `strategy.adapter:run_strategy`, execute the full chain and generate auditable reports | Complete orchestration | Yes | Missing authorized data fails nonzero and lists required files |
 
 ## Safety-only changes
 
@@ -24,10 +25,10 @@ This mapping separates preserved research source from the supported replication 
 - `factor_analysis_workflow.py`: replaced a contributor CSV path with required `--input`.
 - `alpha_calculator.py` and `scripts/calculate_alpha.py`: removed default Mongo endpoint and require `PANDA_FACTOR_MONGO_URI` or `--mongo-uri`.
 - `panda_common/config.py`: logs configuration key names instead of the complete configuration values.
-- `style_industry_neutralize_demo.py`: strengthened the existing demo/toy warning; calculations are unchanged.
+- `style_industry_neutralize_demo.py`: moved under `examples/` and strengthened the existing demo/toy warning; calculations are unchanged.
 
 ## Intentionally excluded source and artifacts
 
 The rest of the local `panda_factor` monorepo is not needed to preserve the identified strategy research chain. Server/API code, provider-specific ingestion services, duplicated build copies, local MongoDB data, caches, logs, `.Temp`, nested `.git`, config values and generated intermediates remain ignored. A historical embedded Mongo connection string found in an unselected minute-reader comment was removed during the security audit even though that file remains excluded.
 
-No preserved legacy module is silently promoted to the supported replication adapter. Connecting one requires a separate fidelity review and authorized data schema.
+The supported adapter is a clean implementation of the rules that can be confirmed from the preserved fragments. It imports no toy PnL and labels unknown production choices as configurable practical adaptations.

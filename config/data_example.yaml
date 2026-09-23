@@ -1,0 +1,27 @@
+# Example data and strategy overrides. Values contain no credentials.
+data:
+  provider: "local_files"
+  path: "data/input"
+  prices_file: "prices.csv"
+  benchmark_file: "benchmark.csv"
+  required_files: ["prices.csv", "benchmark.csv"]
+
+strategy:
+  signal:
+    momentum_window: 20
+    beta_window: 60
+    volatility_window: 20
+    liquidity_window: 20
+    winsorize_quantile: 0.01
+    neutralize_industry: true
+    min_cross_section: 5
+  selection:
+    top_n: 3
+    weighting: "equal"
+  backtest:
+    rebalance_frequency: "monthly"
+    commission_bps: 5.0
+    slippage_bps: 5.0
+    annualization_days: 252
+    risk_free_rate: 0.025
+    missing_held_return: "fail"

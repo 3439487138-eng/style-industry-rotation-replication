@@ -22,12 +22,15 @@ FORBIDDEN_PARTS = {
 FORBIDDEN_SUFFIXES = {".db", ".log", ".pdf", ".pyc", ".sqlite", ".xlsx"}
 REQUIRED_LEGACY = {
     "panda_factor/LICENSE",
-    "panda_factor/scripts/style_industry_neutralize_demo.py",
+    "examples/style_industry_neutralize_demo.py",
     "panda_factor/panda_factor/panda_factor/analysis/alpha_calculator.py",
     "panda_factor/panda_factor/panda_factor/analysis/factor.py",
     "panda_factor/panda_factor/panda_factor/analysis/factor_func.py",
     "panda_factor/panda_factor/panda_factor/generate/factor_utils.py",
     "scripts/calculate_alpha.py",
+    "src/strategy/adapter.py",
+    "src/strategy/factors.py",
+    "src/strategy/portfolio.py",
 }
 
 

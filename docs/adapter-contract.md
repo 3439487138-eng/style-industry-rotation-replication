@@ -1,6 +1,17 @@
 # Strategy Adapter Contract
 
-The engineering layer deliberately does not implement the strategy. A production adapter is a thin callable around the authorized original engine.
+The repository now includes an executable strategy implementation at
+`src/strategy/`. The configured production adapter is
+`strategy.adapter:run_strategy`; it connects the engineering runner to the
+real-data factor, signal, portfolio and reporting pipeline.
+
+The implementation preserves the rules that can be verified from the retained
+research source: 20-day momentum, beta/size/volatility/liquidity exposures,
+cross-sectional winsorization and standardization, industry-dummy OLS
+neutralization, residual ranking, and next-period return evaluation. Rules that
+cannot be recovered from the source (for example production Top-N, rebalance
+frequency and trading costs) remain explicit configuration parameters and are
+reported as a practical adaptation.
 
 ## Callable
 
@@ -11,7 +22,12 @@ def run(config: ProjectConfig, context: RunContext) -> dict:
     ...
 ```
 
-It must read real inputs from `context.data_path`, execute the original calculation in its original order, and return only outputs computed during that invocation. It must not silently substitute mock, demo, random, interpolated, cached, or old results.
+It must read real inputs from `context.data_path`, validate their fields and
+coverage, execute the configured calculation in order, and return only outputs
+computed during that invocation. It must not silently substitute mock, demo,
+random, interpolated, cached, or old results. Missing authorized data is an
+expected `UNAVAILABLE` condition with a nonzero exit code; no performance output
+is generated in that case.
 
 ## Required payload
 

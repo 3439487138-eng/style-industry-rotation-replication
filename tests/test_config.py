@@ -12,12 +12,12 @@ from replication.errors import ConfigurationError, ReplicationUnavailable
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_default_config_is_structurally_valid_but_fails_closed() -> None:
+def test_default_config_has_real_adapter_but_fails_on_missing_data() -> None:
     config_path = ROOT / "config" / "base.yaml"
     project = load_project_config(config_path, ROOT)
-    assert project.adapter == "unavailable"
+    assert project.adapter == "strategy.adapter:run_strategy"
     assert project.display_data_path == "data/input"
-    with pytest.raises(ReplicationUnavailable, match="strategy implementation"):
+    with pytest.raises(ReplicationUnavailable, match="prices.csv.*benchmark.csv"):
         load_project_config(config_path, ROOT, require_ready=True)
 
 

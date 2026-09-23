@@ -1,83 +1,118 @@
 # 贝塔配置：风格行业轮动体系化方案
 
-这是对现有研究材料的工程化整理，不是重新编写的策略。仓库提供可审计配置、薄适配器接口、稳定失败语义、测试、独立 HTML 报告契约和手动 GitHub Actions。它不会用随机数据、示例回测、缓存或历史图表冒充本次复现结果。
+这是一个可执行的风格/行业轮动回测工程。正式入口已经连接完整的“数据→因子→中性化评分→轮动信号→组合→调仓成本→净值→指标→报告”链路，不再使用 `UNAVAILABLE` 策略占位器，也不会把 demo、测试夹具、缓存或旧结果作为正式回测证据。
 
-## 当前结论
+当前仓库没有可公开且足够完整的真实输入面板，因此尚未生成或声称任何真实收益结果。提供符合字段契约的授权数据后，正式入口会执行完整回测；数据缺失时会非零退出并列出缺失文件。
 
-现有材料不足以形成完整、可运行的真实策略链。能够确认的源码片段包括：
+## 策略依据与边界
 
-- Tushare/本地 MongoDB 的行情、指数、申万行业和基础因子采集代码；
-- 动量、Beta、规模、波动率、流动性及行业/风格中性化的示例计算；
-- 固定四只股票的 Alpha 计算脚本；
-- 八个公开风格指数的两端点区间收益比较（`大类.py`）。
+仓库材料能够确认：
 
-缺失的是把这些片段连接为论文策略所需的精确定义：完整因子集与合成权重、风格/行业信号规则、股票池过滤、组合优化约束、调仓时点与成交规则、交易成本、完整绩效评价及生产报告。现有 `panda_factor` 示例明确是 toy backtest，`大类.py` 只是区间比较，因此二者都没有接入正式入口。
+- 原始因子采用 20 日动量；
+- 风格暴露包含 Beta、规模、波动率和流动性；
+- 对原始因子做截面去极值、标准化，并对风格暴露和行业虚拟变量进行 OLS 中性化；
+- 中性化残差作为纯 Alpha/强弱评分；
+- 已有 demo 使用 Top-N 等权和下一期收益。
 
-默认执行会清晰返回 `UNAVAILABLE`（退出码 3）。只有获得授权的原始策略引擎后，才应通过薄适配器连接；不得在调度层重写算法。
+材料没有给出生产策略的精确 Top-N、调仓频率、成本拆分及优化约束。因此 [base.yaml](config/base.yaml) 将它们设为显式参数，默认值属于 `practical adaptation`，不是对论文规则的虚构声明。
 
-## 受支持的调用链
+## 完整策略流程
 
-```text
-config/base.yaml + .env/CLI overrides
-             │
-             ▼
-run_replication.py
-  ├─ 校验配置、真实数据位置及所需环境变量
-  ├─ 动态加载 strategy.adapter（module:function）
-  ├─ 一次性调用原始策略适配器
-  ├─ 校验本次运行返回的证据 payload
-  └─ 原子写入 outputs/report.json 与独立 outputs/report.html
-```
+1. 读取并验证真实 `prices.csv` 和 `benchmark.csv`。
+2. 标准化股票、指数或基金代码。
+3. 按资产计算收益、动量、滚动 Beta、波动率、流动性和对数规模。
+4. 在同一交易日截面上对动量及风格暴露去极值、标准化。
+5. 用 Beta、规模、波动率、流动性及行业虚拟变量解释动量，OLS 残差作为轮动评分。
+6. 在每个配置周期最后一个可用收盘生成排名和 Top-N 等权目标。
+7. 下一交易日收盘调仓，新权重只影响之后的收盘到收盘收益，避免把信号当日收益计入。
+8. 按含现金的一向换手率扣除手续费和滑点。
+9. 缺少持仓资产收益时立即失败，不填零、不前向填充。
+10. 计算净值、基准、月度收益、回撤、Sharpe、胜率、调仓次数、换手率和 Rank IC。
+11. 输出 CSV、PNG、Markdown、JSON 和独立 HTML 报告。
 
-配置优先级为命令行 > 环境变量 > YAML。数据路径可用 `--data-path` 或 `REPLICATION_DATA_PATH` 覆盖，适配器可用 `--adapter` 或 `REPLICATION_STRATEGY_ADAPTER` 覆盖。
+正式实现位于 `src/strategy/`；`examples/style_industry_neutralize_demo.py` 仅保留原始研究依据，不进入正式调用链。
 
-## 目录
+## 数据要求
 
-- `config/base.yaml`：可提交、无密钥的基础配置。
-- `src/replication/`：配置、适配器与报告工程层，不包含策略算法。
-- `tools/`：配置、payload 和 HTML 校验/渲染工具。
-- `tests/`：配置、失败路径、路径兼容、适配器和报告契约测试。
-- `data/README.md`：授权输入数据约定；`data/input/` 不提交。
-- `outputs/README.md`：本次真实运行输出约定。
-- `大类.py`：补充性公开指数观察，不是回测入口。
+将授权数据放入被 Git 忽略的 `data/input/`：
 
-`panda_factor/` 不再整体排除。拟上传仓库会选择性保留其 AGPL 许可证、因子分析、因子生成、数据接口、中性化示例和必要公共工具源码；MongoDB 数据、服务端代码、构建产物、敏感配置及私有数据源实现仍被忽略。逐文件关系见 [`docs/source-mapping.md`](docs/source-mapping.md)，候选清单见 [`docs/upload-manifest.txt`](docs/upload-manifest.txt)。
+- `prices.csv`：`date,asset,close,turnover,market_cap,industry,asset_type`
+- `benchmark.csv`：`date,close`
 
-这些旧模块属于“不完整研究源码”：它们保留了 Beta、动量、规模、波动率、流动性、行业/风格中性化、分组持仓、换手率、收益和指标计算，但仍依赖未提交的 `panda_data` 运行环境与 MongoDB 集合。`run_replication.py` 不会自动调用它们。
+字段定义、时间对齐、停牌/退市和行业点时要求见 [data_requirements.md](docs/data_requirements.md)。只有表头的模板位于 `data/templates/`，不包含虚构观察值。当前缺失清单见 [missing-data.md](docs/missing-data.md)。
 
-## Windows 本地验证
+`计算机.xlsx` 只有少量指数的两个端点，无法计算滚动因子、月度调仓和可靠绩效，正式策略不会使用它。
 
-项目现有虚拟环境使用 Python 3.12。所有验证均从项目根目录执行：
+## 配置参数
+
+主要参数位于 `config/base.yaml`：
+
+- `momentum_window`：原始动量窗口，默认 20；
+- `beta_window`：Beta 窗口，默认 60；
+- `volatility_window`：波动率窗口，默认 20；
+- `liquidity_window`：流动性窗口，默认 20；
+- `winsorize_quantile`：截面缩尾比例；
+- `neutralize_industry`：是否加入行业虚拟变量；
+- `min_cross_section`：单日最少有效资产数；
+- `top_n`：入选资产数，默认 3；
+- `rebalance_frequency`：`weekly`、`monthly` 或 `quarterly`；
+- `commission_bps`、`slippage_bps`：单边交易成本；
+- `risk_free_rate`：Sharpe 使用的年化无风险利率。
+
+默认 Top-3、月频和成本拆分无法从原材料精确确认，因此均可配置并在报告中标为适配项。
+
+## 本地运行
+
+Windows：
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe tools\validate_config.py --structure-only
 .\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe run_replication.py --help
-.\.venv\Scripts\python.exe run_replication.py --check
+.\.venv\Scripts\python.exe run_replication.py --config config/base.yaml
 ```
 
-最后一条在默认配置下应返回退出码 3，因为真实适配器和授权数据尚未提供。这是预期结果，不代表测试失败。
-
-## 接入原始引擎
-
-适配器必须是 `module:function`，接受 `(ProjectConfig, RunContext)` 并返回当前运行生成的报告 payload。完整接口与字段见 [`docs/adapter-contract.md`](docs/adapter-contract.md)。例如：
+使用外部授权目录：
 
 ```powershell
-$env:REPLICATION_DATA_PATH = '.\authorized-data'
-$env:REPLICATION_STRATEGY_ADAPTER = 'my_private_adapter:run'
-.\.venv\Scripts\python.exe run_replication.py --check
-.\.venv\Scripts\python.exe run_replication.py
+.\.venv\Scripts\python.exe run_replication.py `
+  --config config/base.yaml `
+  --data-path .\authorized\rotation-data
 ```
 
-凭证名称写入 `data.required_env`，值只放在本地 `.env` 或 GitHub Secrets。选定真实适配器后，还需在工作流 `env` 中逐项映射同名 Secret；当前没有选定数据源，因此工作流不会暴露任何 Secret。不得将 Token、密码、Cookie 或私有数据写入 YAML 或提交到仓库。
+成功运行会生成：
 
-旧研究文件读取路径通过 `PANDA_FACTOR_DATA_ROOT` 和 `PANDA_FACTOR_LIBRARY_ROOT` 参数化；旧 Alpha 示例通过 `PANDA_FACTOR_MONGO_URI` 和 `PANDA_FACTOR_MONGO_DB` 配置。它们不属于正式入口，连接信息也不会写入仓库。
+- `outputs/performance_metrics.csv`
+- `outputs/monthly_returns.csv`
+- `outputs/nav_curve.csv`
+- `outputs/positions.csv`
+- `outputs/rotation_signals.csv`
+- `outputs/factor_effectiveness.csv`
+- `outputs/backtest_report.md`
+- `outputs/report.json`、`outputs/report.html`
+- `outputs/figures/nav_curve.png`
+- `outputs/figures/drawdown_curve.png`
+- `outputs/figures/style_or_industry_scores.png`
 
 ## GitHub Actions
 
-工作流仅支持 `workflow_dispatch`。默认只安装依赖、检查配置结构并运行测试；勾选 `run_replication` 后才会使用同一个 `run_replication.py` 执行真实策略、校验报告、上传 artifact，并只提交 `outputs/report.json` 和 `outputs/report.html`。在接入合法数据源前不要勾选该选项，也不配置定时运行。
+工作流分为两层：
 
-## 安全与限制
+- `push`、`pull_request`、普通 `workflow_dispatch`：安装依赖、校验配置、编译源码、运行 16+ 项测试，并在隔离临时目录中验证完整策略链。测试夹具不会写入正式 `outputs/`，也不代表收益结果。
+- 手动勾选 `run_full`：从 `REPLICATION_DATA_ARCHIVE_URL` 下载授权 ZIP，可选使用 `REPLICATION_DATA_ARCHIVE_TOKEN`，随后执行正式入口、报告校验、Artifact 上传和同分支结果提交。任一步失败都会使工作流失败。
 
-曾嵌入源码的 Tushare Token 已移除，应在服务商侧撤销并轮换。当前没有生成 `outputs/report.json` 或 `outputs/report.html`，也没有声称复现收益。研究输出不构成投资建议。
+私有 ZIP 根目录应直接包含 `prices.csv` 和 `benchmark.csv`。以上变量在 GitHub 中配置为 Secrets，数据目录、下载文件和日志不会被强制加入 Git。
+
+## 原始研究源码
+
+`panda_factor/` 中可公开的 AGPL 研究源码被选择性保留，包括因子分析、因子生成、中性化、持仓、换手率、收益和指标计算。完整映射见 [source-mapping.md](docs/source-mapping.md)，上传候选见 [upload-manifest.txt](docs/upload-manifest.txt)。
+
+这些旧模块用于依据追溯；正式策略调用链只使用 `src/strategy/`。历史 demo 已移至 `examples/` 并明确标注，不能作为正式回测结果。
+
+## 当前结果与限制
+
+- 实际完成的真实数据回测：尚未完成，原因是缺少完整授权输入面板。
+- 当前正式命令结果：非零退出并报告缺少 `prices.csv`、`benchmark.csv`。
+- 测试结果只证明公式、时序、成本、失败路径和报告生成可执行，不代表论文收益复现。
+- 原材料没有提供完整生产规则，配置化默认值均属于 practical adaptation。
+- 研究输出不构成投资建议。

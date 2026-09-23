@@ -49,6 +49,7 @@ outputs/.cache/
 
 # Authorized inputs stay local; only the data contract is versioned.
 data/input/
+data/private/
 
 # Audited local research materials retained on disk but excluded from GitHub.
 # Keep only the explicitly re-included public research source below. The rest of
@@ -58,7 +59,6 @@ panda_factor/**
 !panda_factor/LICENSE
 !panda_factor/scripts/
 panda_factor/scripts/**
-!panda_factor/scripts/style_industry_neutralize_demo.py
 !panda_factor/panda_factor/
 panda_factor/panda_factor/**
 !panda_factor/panda_factor/panda_factor/
