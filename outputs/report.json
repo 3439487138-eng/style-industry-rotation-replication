@@ -1,0 +1,158 @@
+{
+  "paper": {
+    "title": "贝塔配置：风格行业轮动体系化方案",
+    "citation": "Local research materials; practical adaptation",
+    "source": "贝塔配置：风格行业轮动体系化方案.pdf"
+  },
+  "run": {
+    "status": "adapted",
+    "mode": "practical adaptation",
+    "sample": "2018-07-31 to 2026-07-31",
+    "commit_sha": "cd6689e35fa1",
+    "generated_at": "2026-09-23T05:17:01.712752+00:00",
+    "command": "python run_replication.py --config config/base.yaml",
+    "adapter": "strategy.adapter:run_strategy",
+    "data_provider": "local_files",
+    "data_path": "data/input"
+  },
+  "summary": "A complete current-run public-index style rotation backtest using momentum, reversal, low-volatility and drawdown proxy scores, with lagged monthly Top-1 execution and explicit costs.",
+  "metrics": [
+    {
+      "Metric": "start_date",
+      "Strategy": "2018-07-31"
+    },
+    {
+      "Metric": "end_date",
+      "Strategy": "2026-07-31"
+    },
+    {
+      "Metric": "trading_days",
+      "Strategy": "1940"
+    },
+    {
+      "Metric": "total_return",
+      "Strategy": "-0.019703"
+    },
+    {
+      "Metric": "annualized_return",
+      "Strategy": "-0.002582"
+    },
+    {
+      "Metric": "annualized_volatility",
+      "Strategy": "0.213101"
+    },
+    {
+      "Metric": "sharpe_ratio",
+      "Strategy": "-0.129430"
+    },
+    {
+      "Metric": "maximum_drawdown",
+      "Strategy": "-0.571591"
+    },
+    {
+      "Metric": "monthly_win_rate",
+      "Strategy": "0.505155"
+    },
+    {
+      "Metric": "rebalance_count",
+      "Strategy": "49"
+    },
+    {
+      "Metric": "annualized_turnover",
+      "Strategy": "6.364948"
+    },
+    {
+      "Metric": "total_transaction_cost",
+      "Strategy": "0.049000"
+    },
+    {
+      "Metric": "benchmark_total_return",
+      "Strategy": "0.304333"
+    },
+    {
+      "Metric": "mean_rank_ic",
+      "Strategy": "-0.003275"
+    },
+    {
+      "Metric": "input_profile",
+      "Strategy": "public_index_proxy"
+    },
+    {
+      "Metric": "input_asset_count",
+      "Strategy": "6"
+    },
+    {
+      "Metric": "input_industry_count",
+      "Strategy": "0"
+    },
+    {
+      "Metric": "first_valid_factor_date",
+      "Strategy": "2018-07-11"
+    }
+  ],
+  "methodology": [
+    {
+      "Paper rule": "Publicly reproducible Barra-style proxy",
+      "Implementation": "Cross-sectional composite of momentum, reversal, low volatility and drawdown across six Chinese equity indices",
+      "Status": "adapted"
+    },
+    {
+      "Paper rule": "Periodic style rotation",
+      "Implementation": "Configured Top-1 equal weight, next-close execution and explicit turnover costs",
+      "Status": "adapted"
+    },
+    {
+      "Paper rule": "Individual-stock style and industry neutralization",
+      "Implementation": "Unavailable because no real stock-level market-cap/turnover/industry panel was found; no fields were fabricated",
+      "Status": "unavailable"
+    }
+  ],
+  "assumptions": [
+    "Provider: local_files; profile: public_index_proxy; prices: prices.csv (11999 rows, 6 assets); benchmark: benchmark.csv (2081 rows);  sources: Sina Finance via AkShare stock_zh_index_daily; coverage: 2018-01-02 to 2026-07-31; prices_sha256: d1b3212339f76742692d6e126473f9feae9a16244e9ad9889f5d07e2a482c435; benchmark_sha256: 844279212f09d362c5663bbb53703f71db82782252076abc709eebb71d83cdd9.",
+    "Signal at date t uses only observations dated t or earlier.",
+    "Trades execute at the next available close and affect subsequent returns.",
+    "Missing held-asset returns stop the run rather than being imputed.",
+    "Commission plus slippage: 10.0 bps per unit one-way turnover."
+  ],
+  "fidelity_gaps": [
+    "This medium-fidelity public-index proxy cannot replace the unavailable individual-stock industry-neutralized baseline.",
+    "Exact production lookbacks and score weights were not present in the recovered engine; configured windows and equal component weights are explicit practical adaptations.",
+    "Volume is retained as source provenance but is not relabelled as turnover or used as a liquidity factor."
+  ],
+  "figures": [
+    {
+      "title": "NAV curve",
+      "path": "outputs/figures/nav_curve.png",
+      "alt": "Strategy and benchmark NAV"
+    },
+    {
+      "title": "Drawdown curve",
+      "path": "outputs/figures/drawdown_curve.png",
+      "alt": "Strategy drawdown"
+    },
+    {
+      "title": "Style or industry scores",
+      "path": "outputs/figures/style_or_industry_scores.png",
+      "alt": "Neutralized rotation scores"
+    }
+  ],
+  "tables": [
+    {
+      "title": "Latest selected assets",
+      "columns": [
+        "Execution date",
+        "Asset",
+        "Score",
+        "Target weight"
+      ],
+      "rows": [
+        [
+          "2026-07-01",
+          "SH000905",
+          "0.344843",
+          "1.000000"
+        ]
+      ]
+    }
+  ]
+}
