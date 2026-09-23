@@ -42,13 +42,19 @@ def _code_revision(project_root: object) -> str:
             text=True,
             timeout=5,
         ).stdout.strip()
-        dirty = subprocess.run(
-            command + ["status", "--porcelain"],
+        worktree = subprocess.run(
+            command + ["diff", "--quiet"],
             capture_output=True,
-            check=True,
-            text=True,
             timeout=5,
-        ).stdout.strip()
+        )
+        index = subprocess.run(
+            command + ["diff", "--cached", "--quiet"],
+            capture_output=True,
+            timeout=5,
+        )
+        if worktree.returncode not in {0, 1} or index.returncode not in {0, 1}:
+            return revision + "-revision-check-failed"
+        dirty = worktree.returncode == 1 or index.returncode == 1
         return revision + ("-dirty" if dirty else "")
     except (OSError, subprocess.SubprocessError):
         return "unavailable in local execution"
